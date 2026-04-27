@@ -1,24 +1,26 @@
 # fluttersdksample
 
-aiforpet 진단 SDK를 호출하기 위한 Flutter 데모 앱.
-호스트 네이티브(Android/iOS) 앱이 노출하는 `MethodChannel`로 SDK 진입점을 호출하고, 반환된 JSON 결과를 화면에 표시한다.
+🌐 **English** · [한국어](README.ko.md) · [日本語](README.ja.md)
 
-## 동작 개요
+A Flutter demo app that invokes the aiforpet diagnosis SDK.
+The host native (Android / iOS) layer exposes a `MethodChannel`; the Flutter UI calls the SDK entry point through it and renders the JSON result.
 
-- 화면 상단: 두 개의 SDK 옵션 토글 (`enableQuestionnaire`, `enableResultView`)
-- 화면 본문: 펫 종류(DOG / CAT)별 진단 부위 카드
+## Overview
+
+- Top of screen: two SDK option toggles (`enableQuestionnaire`, `enableResultView`)
+- Body: per-pet diagnosis cards
   - DOG: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH`
   - CAT: `EYE`, `TEETH`
-- 카드 탭 시 네이티브 채널로 `launchSdk` 호출 → 결과 오버레이로 JSON 포맷 출력
+- Tapping a card invokes `launchSdk` over the native channel; the result is shown in a JSON-formatted overlay.
 
-## MethodChannel 사양
+## MethodChannel spec
 
-| 항목 | 값 |
+| Field | Value |
 | --- | --- |
-| 채널명 | `com.aiforpet.sdk/channel` |
-| 메서드 | `launchSdk` |
+| Channel | `com.aiforpet.sdk/channel` |
+| Method | `launchSdk` |
 
-### 인자
+### Arguments
 
 ```json
 {
@@ -29,37 +31,42 @@ aiforpet 진단 SDK를 호출하기 위한 Flutter 데모 앱.
 }
 ```
 
-### 반환값
+### Return value
 
-`String?` — SDK 결과. JSON이면 들여쓰기 4칸으로 포맷되어 화면에 표시되고, 아니면 raw 텍스트로 노출된다.
+`String?` — SDK result. If JSON, it is pretty-printed with 4-space indentation; otherwise rendered as raw text.
 
-## 사전 설정
+## Setup
 
-### 1. SDK 인증 설정
+### 1. SDK auth configuration
 
-`assets/auth-config.json.example`을 복사하여 `assets/auth-config.json`을 만들고 발급받은 자격증명을 채운다.
+Copy `assets/auth-config.json.example` to `assets/auth-config.json` and fill in the credentials issued for your project.
 
 ```bash
 cp assets/auth-config.json.example assets/auth-config.json
-# editor로 clientId / clientKeyId / clientKeySecret / clientKey 채움
+# Edit clientId / clientKeyId / clientKeySecret / clientKey
 ```
 
-> ⚠️ `assets/auth-config.json`은 `.gitignore`에 등록되어 있다. 비밀키 포함 → **절대 커밋 금지**.
+> ⚠️ `assets/auth-config.json` is listed in `.gitignore`. It contains a secret key — **never commit it**.
 
-### 2. iOS 서명
+### 2. iOS signing
 
-`ios/Runner.xcworkspace`를 Xcode에서 열고 Runner 타겟의 **Signing & Capabilities**에서 본인 Apple Development Team을 선택한다 (Automatic signing).
+Open `ios/Runner.xcworkspace` in Xcode and select your Apple Development Team under the Runner target's **Signing & Capabilities** (Automatic signing).
 
-## 실행
+### 3. Android ProGuard rules (release builds)
+
+Release builds with R8 minification require keep rules for JNI-referenced classes (ONNX Runtime, LiteRT, AIScan SDK). These are already provided in `android/app/proguard-rules.pro` and wired into the release build type. No further action needed for this sample.
+
+## Run
 
 ```bash
 flutter pub get
-flutter run
+flutter run                 # debug
+flutter run --release       # release (verifies ProGuard rules)
 ```
 
-호스트 네이티브 측에 위 채널을 처리하는 핸들러가 구현되어 있어야 정상 동작한다.
+The host native layer must implement the channel above for the SDK calls to succeed.
 
-## 검증
+## Verify
 
 ```bash
 flutter analyze
