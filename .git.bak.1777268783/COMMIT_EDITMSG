@@ -1,0 +1,15 @@
+Initial commit: aiforpet SDK Flutter demo
+
+- StartActivityScreen invokes the SDK via MethodChannel
+  (com.aiforpet.sdk/channel) for DOG and CAT diagnostic parts.
+- Result payloads pretty-printed as indented JSON, with raw-text
+  fallback on FormatException.
+- Pet/part catalog refactored to a data-driven PetSection model;
+  background and per-pet card colors extracted as constants.
+- widget_test mocks the platform channel and exercises rendering,
+  the option-toggle path, and the launchSdk -> result-overlay flow
+  (3/3 passing, flutter analyze clean).
+- README documents the channel contract and run/verify commands.
+- .gitignore excludes .bkit/ and .omc/ tooling state.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
