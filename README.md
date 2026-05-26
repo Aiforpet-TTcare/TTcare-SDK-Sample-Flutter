@@ -5,6 +5,8 @@
 A Flutter demo app that invokes the aiforpet diagnosis SDK.
 The host native (Android / iOS) layer exposes a `MethodChannel`; the Flutter UI calls the SDK entry point through it and renders the JSON result.
 
+Native SDK versions: Android `scansdk-lib:2.0.6`, iOS `AIScan 2.0.2`.
+
 ## Overview
 
 - Top of screen: two SDK option toggles (`enableQuestionnaire`, `enableResultView`)

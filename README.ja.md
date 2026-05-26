@@ -5,6 +5,8 @@
 aiforpet 診断 SDK を呼び出す Flutter デモアプリ。
 ホストネイティブ(Android / iOS)が公開する `MethodChannel` 経由で SDK のエントリポイントを呼び出し、返却された JSON 結果を画面に表示する。
 
+ネイティブ SDK バージョン: Android `scansdk-lib:2.0.6`, iOS `AIScan 2.0.2`.
+
 ## 概要
 
 - 画面上部: SDK オプション切り替えトグル 2 つ (`enableQuestionnaire`, `enableResultView`)

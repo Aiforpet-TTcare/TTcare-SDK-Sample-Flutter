@@ -5,6 +5,8 @@
 aiforpet 진단 SDK를 호출하기 위한 Flutter 데모 앱.
 호스트 네이티브(Android / iOS) 앱이 노출하는 `MethodChannel`로 SDK 진입점을 호출하고, 반환된 JSON 결과를 화면에 표시한다.
 
+네이티브 SDK 버전: Android `scansdk-lib:2.0.6`, iOS `AIScan 2.0.2`.
+
 ## 동작 개요
 
 - 화면 상단: 두 개의 SDK 옵션 토글 (`enableQuestionnaire`, `enableResultView`)
