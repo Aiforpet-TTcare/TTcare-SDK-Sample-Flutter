@@ -59,6 +59,7 @@ class _StartActivityScreenState extends State<StartActivityScreen> {
 
   bool enablesQuestionnaire = true;
   bool enableResultView = true;
+  bool enablePdfShare = true;
 
   String? resultText;
   bool showResultView = false;
@@ -72,6 +73,7 @@ class _StartActivityScreenState extends State<StartActivityScreen> {
         'partType': partType,
         'enablesQuestionnaire': enablesQuestionnaire,
         'enableResultView': enableResultView,
+        'enablePdfShare': enablePdfShare,
         'authConfig': authConfig,
       });
 
@@ -177,6 +179,9 @@ class _StartActivityScreenState extends State<StartActivityScreen> {
                 }),
                 _buildOptionRow('enableResultView', enableResultView, (val) {
                   setState(() => enableResultView = val ?? true);
+                }),
+                _buildOptionRow('enablePdfShare', enablePdfShare, (val) {
+                  setState(() => enablePdfShare = val ?? true);
                 }),
                 
                 Expanded(

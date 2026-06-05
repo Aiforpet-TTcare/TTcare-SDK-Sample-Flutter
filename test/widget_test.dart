@@ -28,6 +28,7 @@ void main() {
 
     expect(find.text('enableQuestionnaire'), findsOneWidget);
     expect(find.text('enableResultView'), findsOneWidget);
+    expect(find.text('enablePdfShare'), findsOneWidget);
     expect(find.text('DOG'), findsOneWidget);
     expect(find.text('EYE'), findsAtLeastNWidgets(1));
     expect(find.text('TEETH'), findsAtLeastNWidgets(1));

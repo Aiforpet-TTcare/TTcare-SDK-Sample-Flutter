@@ -5,11 +5,13 @@
 aiforpet 진단 SDK를 호출하기 위한 Flutter 데모 앱.
 호스트 네이티브(Android / iOS) 앱이 노출하는 `MethodChannel`로 SDK 진입점을 호출하고, 반환된 JSON 결과를 화면에 표시한다.
 
-네이티브 SDK 버전: Android `scansdk-lib:2.0.6`, iOS `AIScan 2.0.3`.
+네이티브 SDK 버전: Android `scansdk-lib:2.1.0`, iOS `AIScan 2.0.3`.
+Android SDK 2.1.0은 결과 화면에서 영어, 한국어, 일본어, 이탈리아어, 스웨덴어, 태국어 현지화를 지원한다.
+Android는 Android 9.0 이상(`minSdk 28`)이 필요하다.
 
 ## 동작 개요
 
-- 화면 상단: 두 개의 SDK 옵션 토글 (`enableQuestionnaire`, `enableResultView`)
+- 화면 상단: 세 개의 SDK 옵션 토글 (`enableQuestionnaire`, `enableResultView`, `enablePdfShare`)
 - 화면 본문: 펫 종류(DOG / CAT)별 진단 부위 카드
   - DOG: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH`
   - CAT: `EYE`, `TEETH`
@@ -29,9 +31,12 @@ aiforpet 진단 SDK를 호출하기 위한 Flutter 데모 앱.
   "petType": "DOG | CAT",
   "partType": "EYE | EAR | BODY | FOOT | TEETH",
   "enablesQuestionnaire": true,
-  "enableResultView": true
+  "enableResultView": true,
+  "enablePdfShare": true
 }
 ```
+
+`enablePdfShare`는 Android SDK 2.1.0 옵션이며, 내장 결과 화면에서 PDF 공유 버튼을 표시할지 제어한다.
 
 ### 반환값
 

@@ -5,11 +5,13 @@
 A Flutter demo app that invokes the aiforpet diagnosis SDK.
 The host native (Android / iOS) layer exposes a `MethodChannel`; the Flutter UI calls the SDK entry point through it and renders the JSON result.
 
-Native SDK versions: Android `scansdk-lib:2.0.6`, iOS `AIScan 2.0.3`.
+Native SDK versions: Android `scansdk-lib:2.1.0`, iOS `AIScan 2.0.3`.
+Android SDK 2.1.0 supports result screen localization for English, Korean, Japanese, Italian, Swedish, and Thai.
+Android requires Android 9.0+ (`minSdk 28`).
 
 ## Overview
 
-- Top of screen: two SDK option toggles (`enableQuestionnaire`, `enableResultView`)
+- Top of screen: three SDK option toggles (`enableQuestionnaire`, `enableResultView`, `enablePdfShare`)
 - Body: per-pet diagnosis cards
   - DOG: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH`
   - CAT: `EYE`, `TEETH`
@@ -29,9 +31,12 @@ Native SDK versions: Android `scansdk-lib:2.0.6`, iOS `AIScan 2.0.3`.
   "petType": "DOG | CAT",
   "partType": "EYE | EAR | BODY | FOOT | TEETH",
   "enablesQuestionnaire": true,
-  "enableResultView": true
+  "enableResultView": true,
+  "enablePdfShare": true
 }
 ```
+
+`enablePdfShare` is an Android SDK 2.1.0 option that controls whether the built-in result screen shows the PDF share button.
 
 ### Return value
 

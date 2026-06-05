@@ -28,16 +28,24 @@ class MainActivity : FlutterActivity() {
                 val partType = call.argument<String>("partType") ?: ""
                 val enablesQuestionnaire = call.argument<Boolean>("enablesQuestionnaire") ?: true
                 val enableResultView = call.argument<Boolean>("enableResultView") ?: true
+                val enablePdfShare = call.argument<Boolean>("enablePdfShare") ?: true
                 val authConfig = call.argument<String>("authConfig") ?: ""
 
-                launchSdkActivity(petType, partType, enablesQuestionnaire, enableResultView, authConfig)
+                launchSdkActivity(petType, partType, enablesQuestionnaire, enableResultView, enablePdfShare, authConfig)
             } else {
                 result.notImplemented()
             }
         }
     }
 
-    private fun launchSdkActivity(petType: String, partType: String, enablesQuestionnaire: Boolean, enableResultView: Boolean, authConfig: String) {
+    private fun launchSdkActivity(
+        petType: String,
+        partType: String,
+        enablesQuestionnaire: Boolean,
+        enableResultView: Boolean,
+        enablePdfShare: Boolean,
+        authConfig: String
+    ) {
         val selectLang = getCurrentLanguageCategory()
         val guideBase = "https://resource-core.aiforpetcdn.com/sdk/guide/$selectLang/${petType.lowercase(Locale.ROOT)}/"
         
@@ -77,6 +85,7 @@ class MainActivity : FlutterActivity() {
             putString("petGender", "M")
             putBoolean("enablesQuestionnaire", enablesQuestionnaire)
             putBoolean("enableResultView", enableResultView)
+            putBoolean("enablePdfShare", enablePdfShare)
             putString("petAdditionalInfo", petAdditionalInfo.toString())
             putString("ttConf", authConfig)
             putString("guideUrl", guideUrl)
