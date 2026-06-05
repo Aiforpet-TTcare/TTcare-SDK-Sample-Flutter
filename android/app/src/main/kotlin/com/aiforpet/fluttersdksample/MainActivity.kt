@@ -81,7 +81,7 @@ class MainActivity : FlutterActivity() {
             putString("userId", "userId")
             putString("petId", "petId")
             putString("petBirthday", "2025-01-01")
-            putString("petBreedName", "MBSMIN")
+            putString("petBreedName", "petBreedName")
             putString("petGender", "M")
             putBoolean("enablesQuestionnaire", enablesQuestionnaire)
             putBoolean("enableResultView", enableResultView)
