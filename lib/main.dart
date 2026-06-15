@@ -9,6 +9,7 @@ void main() {
 const Color _kBackgroundColor = Color(0xFF1E2E58);
 const Color _kDogCardColor = Color(0xFF0C50A1);
 const Color _kCatCardColor = Color(0xFF6DA8AA);
+const String _kSdkKey = 'Enter your issued SDK key';
 
 class PetSection {
   const PetSection({required this.petType, required this.color, required this.parts});
@@ -66,17 +67,14 @@ class _StartActivityScreenState extends State<StartActivityScreen> {
 
   Future<void> launchSdk(String petType, String partType) async {
     try {
-      final authConfig = await rootBundle.loadString('assets/auth-config.json');
-
       final String? result = await platform.invokeMethod('launchSdk', {
         'petType': petType,
         'partType': partType,
         'enablesQuestionnaire': enablesQuestionnaire,
         'enableResultView': enableResultView,
         'enablePdfShare': enablePdfShare,
-        'authConfig': authConfig,
+        'sdkKey': _kSdkKey,
       });
-
 
       if (result != null) {
         String formattedResult = result;

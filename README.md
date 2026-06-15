@@ -10,10 +10,10 @@ The README is written so Flutter integrators can understand the Android native S
 
 | Platform | Native SDK |
 | --- | --- |
-| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.0` |
+| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.1` |
 | iOS | `AIScan 2.0.3` |
 
-Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.0 supports result screen localization for English, Korean, Japanese, Italian, Swedish, and Thai.
+Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.1 supports result screen localization for English, Korean, Japanese, Italian, Swedish, and Thai.
 
 ## What This Sample Provides
 
@@ -53,7 +53,7 @@ Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.0 supports result s
   "enablesQuestionnaire": true,
   "enableResultView": true,
   "enablePdfShare": true,
-  "authConfig": "{ TTcare auth JSON string }"
+  "sdkKey": "Enter your issued SDK key"
 }
 ```
 
@@ -63,7 +63,7 @@ Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.0 supports result s
 | --- | --- | --- | --- |
 | `petType` | String | Yes | `DOG` or `CAT` |
 | `partType` | String | Yes | Flutter sample value: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH` |
-| `authConfig` | String | Yes | TTcare authentication JSON string loaded from `assets/auth-config.json` |
+| `sdkKey` | String | Yes | SDK key issued for your project |
 | `enablesQuestionnaire` | Boolean | No | Controls SDK questionnaire usage. Default in this sample: `true` |
 | `enableResultView` | Boolean | No | Controls whether the SDK built-in result screen is shown. Default in this sample: `true` |
 | `enablePdfShare` | Boolean | No | Controls whether the built-in result screen shows the PDF share button. Default in this sample: `true` |
@@ -92,7 +92,7 @@ If you extend `android/app/src/main/kotlin/.../MainActivity.kt`, use the followi
 | --- | --- | --- |
 | `petType` | String | `DOG` or `CAT` |
 | `userId` | String | User identifier from your service |
-| `ttConf` | String | TTcare authentication JSON string |
+| `sdkKey` | String | SDK key issued for your project |
 
 ### Required for Skin Scans
 
@@ -131,7 +131,7 @@ val bundle = Bundle().apply {
     putBoolean("enableResultView", enableResultView)
     putBoolean("enablePdfShare", enablePdfShare)
     putString("petAdditionalInfo", petAdditionalInfo.toString())
-    putString("ttConf", authConfig)
+    putString("sdkKey", sdkKey)
     putString("guideUrl", guideUrl)
 
     if (partType == "EAR" || partType == "BODY" || partType == "FOOT") {
@@ -182,11 +182,10 @@ The SDK result JSON can include:
 | `petType` | `DOG` or `CAT` |
 | `part` | Scan part, such as `EYE`, `SKIN`, `TOOTH` |
 | `createdAt` | Analysis creation time |
-| `subPart` | Detailed position such as `EYER`, `EYEL`, `EAR`, `BELLY`, `FOOT`, `TCENTER` |
-| `userId` | User ID passed by the host app |
 | `questions` | Questionnaire answers when questionnaire is enabled |
-| `metadata` | Pet metadata passed by the host app |
 | `response` | User-facing result summary |
+
+Depending on scan type and SDK configuration, the result may also include host app metadata such as `userId`, `petId`, `petBirthday`, `petBreedName`, `petGender`, `petAdditionalInfo`, or detailed position values.
 
 `response.status` is one of:
 
@@ -196,26 +195,136 @@ The SDK result JSON can include:
 | `CAUTION` | Observation is recommended |
 | `WARNING` | Follow-up is recommended |
 
-Detected symptoms may include local file paths:
+When `enablesQuestionnaire=true`, the Android SDK combines questionnaire answers with AI scan output before producing the final status.
+
+| Questionnaire answer | AI scan result | Final status |
+| --- | --- | --- |
+| Symptoms present | Abnormal signs detected | `WARNING` |
+| No symptoms | Abnormal signs detected | `CAUTION` |
+| No symptoms | No abnormal signs detected | `NORMAL` |
+| Symptoms present | No abnormal signs detected | `CAUTION` |
+
+### Detailed Result Blocks
+
+`questions` contains questionnaire answers when the questionnaire flow is enabled.
 
 | Field | Description |
 | --- | --- |
-| `heatmapPath` | Local heatmap image path, `file://...` |
-| `cropImageUrl` | Local crop image path, `file://...` |
+| `text` | Questionnaire question text |
+| `select` | User answer, `Y` or `N` |
 
-These are local files inside the app sandbox, not remote URLs. If your app needs to keep or upload these images, copy or upload them before clearing SDK-generated files.
+`metadata` contains pet data passed by the native bridge.
 
-## SDK Auth Configuration
+| Field | Description |
+| --- | --- |
+| `petBirthday` | Pet birthday passed in the Android Bundle |
+| `petBreedName` | Breed name passed in the Android Bundle |
+| `petGender` | `M`, `F`, `MC`, or `FC` |
+| `petAdditionalInfo` | Parsed additional metadata when JSON string data is provided |
 
-Copy `assets/auth-config.json.example` to `assets/auth-config.json` and fill in the credentials issued for your project.
+`response.description` is result-level guidance for UI rendering.
 
-```bash
-cp assets/auth-config.json.example assets/auth-config.json
+| Field | Description |
+| --- | --- |
+| `title` | Guidance title |
+| `contents` | List of guidance body lines |
+
+Detected symptoms include model output and image URLs:
+
+| Field | Description |
+| --- | --- |
+| `modelName` | Internal model label used for this symptom result |
+| `abnormLevel` | Abnormality level calculated by the SDK |
+| `score` | Model score for the symptom |
+| `cropImageUrl` | HTTPS URL for the crop image |
+| `heatmapUrl` | HTTPS URL for the heatmap image |
+| `isAbnormal` | Whether the symptom is judged abnormal |
+| `resultLabel` | Result label, such as `normal` or `abnormal` |
+| `details` | Symptom explanation blocks |
+
+`response.symptoms[].details` uses the following keys.
+
+| Key | Description |
+| --- | --- |
+| `what_it_is` | General explanation of the detected sign |
+| `related_clinical_conditions` | Partner-facing related clinical conditions and factors |
+| `possible_causes` | Guardian-friendly possible causes |
+| `what_you_can_do` | Home-care guidance and observation tips |
+
+### Position Codes
+
+| Code | Scan type | Description |
+| --- | --- | --- |
+| `EYER` | Eye | Right eye |
+| `EYEL` | Eye | Left eye |
+| `EAR` | Skin | Ear |
+| `BELLY` | Skin | Belly |
+| `FOOT` | Skin | Paw |
+| `TCENTER` | Teeth | Front teeth |
+| `TRIGHT` | Teeth | Right teeth |
+| `TLEFT` | Teeth | Left teeth |
+
+Result images are remote URLs. To display a returned image in Flutter, load the returned URL directly.
+
+```dart
+Image.network(heatmapUrl);
 ```
 
-`assets/auth-config.json` is ignored by Git because it contains secrets. Do not commit real credentials.
+### Sample Result JSON
 
-For production apps, load the TTcare authentication JSON according to your security policy instead of keeping it as plain text in assets.
+```json
+{
+  "status": "SUCCESS",
+  "petType": "DOG",
+  "part": "EYE",
+  "createdAt": 1781485248231,
+  "questions": [
+    { "text": "Are the pupil sizes different?", "select": "N" }
+  ],
+  "response": {
+    "status": "WARNING",
+    "title": "A veterinary visit is recommended as soon as possible.",
+    "analyzedDate": "2026. 06. 15 10:00",
+    "description": {
+      "title": "When to visit a veterinary clinic",
+      "contents": [
+        "If squinting or blinking does not improve",
+        "If redness, swelling, or discharge continues or worsens"
+      ]
+    },
+    "symptoms": [
+      {
+        "code": "opacity",
+        "modelName": "aaaa1",
+        "abnormLevel": 1,
+        "score": 0.53,
+        "cropImageUrl": "https://cdn-results.ai4pet.com/.../diagnosis_crop",
+        "name": "Opacity",
+        "isAbnormal": true,
+        "resultLabel": "abnormal",
+        "heatmapUrl": "https://cdn-results.ai4pet.com/.../diagnosis_heatmap",
+        "details": [
+          {
+            "key": "what_it_is",
+            "title": "What is this sign?",
+            "contents": ["The eye surface appears cloudy or blurred."]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## SDK Key Configuration
+
+The Flutter sample sends the Android SDK key through the `launchSdk` MethodChannel call.
+
+```dart
+const String _kSdkKey = 'Enter your issued SDK key';
+```
+
+Replace the placeholder with the SDK key issued for your project before running the Android sample flow. Do not commit real production SDK keys to public source code; load them according to your security policy.
 
 ## iOS Setup
 

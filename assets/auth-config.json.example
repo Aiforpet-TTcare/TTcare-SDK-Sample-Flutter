@@ -1,9 +1,0 @@
-{
-    "service_version": 4,
-    "service_region": "KR",
-    "service_host": "https://api.sdk.sandbox.ai4pet.co.kr",
-    "clientId": "<YOUR_CLIENT_ID>",
-    "clientKeyId": "<YOUR_CLIENT_KEY_ID>",
-    "clientKeySecret": "<YOUR_CLIENT_KEY_SECRET>",
-    "clientKey": "<YOUR_CLIENT_KEY>"
-}

@@ -1,6 +1,5 @@
 package com.aiforpet.fluttersdksample
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
@@ -10,8 +9,6 @@ import com.aiforpet.pet.check.EyeCameraActivity
 import com.aiforpet.pet.check.SkinCameraActivity
 import com.aiforpet.pet.check.ToothCameraActivity
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.util.Locale
 
 class MainActivity : FlutterActivity() {
@@ -29,9 +26,9 @@ class MainActivity : FlutterActivity() {
                 val enablesQuestionnaire = call.argument<Boolean>("enablesQuestionnaire") ?: true
                 val enableResultView = call.argument<Boolean>("enableResultView") ?: true
                 val enablePdfShare = call.argument<Boolean>("enablePdfShare") ?: true
-                val authConfig = call.argument<String>("authConfig") ?: ""
+                val sdkKey = call.argument<String>("sdkKey") ?: ""
 
-                launchSdkActivity(petType, partType, enablesQuestionnaire, enableResultView, enablePdfShare, authConfig)
+                launchSdkActivity(petType, partType, enablesQuestionnaire, enableResultView, enablePdfShare, sdkKey)
             } else {
                 result.notImplemented()
             }
@@ -44,7 +41,7 @@ class MainActivity : FlutterActivity() {
         enablesQuestionnaire: Boolean,
         enableResultView: Boolean,
         enablePdfShare: Boolean,
-        authConfig: String
+        sdkKey: String
     ) {
         val selectLang = getCurrentLanguageCategory()
         val guideBase = "https://resource-core.aiforpetcdn.com/sdk/guide/$selectLang/${petType.lowercase(Locale.ROOT)}/"
@@ -87,7 +84,7 @@ class MainActivity : FlutterActivity() {
             putBoolean("enableResultView", enableResultView)
             putBoolean("enablePdfShare", enablePdfShare)
             putString("petAdditionalInfo", petAdditionalInfo.toString())
-            putString("ttConf", authConfig)
+            putString("sdkKey", sdkKey)
             putString("guideUrl", guideUrl)
             
             if (partType == "EAR" || partType == "BODY" || partType == "FOOT") {
@@ -114,23 +111,6 @@ class MainActivity : FlutterActivity() {
             }
             pendingResult = null
         }
-    }
-
-    private fun readAssetFile(context: Context, filename: String): String {
-        val builder = StringBuilder()
-        try {
-            context.assets.open(filename).use { inputStream ->
-                BufferedReader(InputStreamReader(inputStream)).use { reader ->
-                    var line: String?
-                    while (reader.readLine().also { line = it } != null) {
-                        builder.append(line).append('\n')
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return builder.toString()
     }
 
     private fun getCurrentLanguageCategory(): String {
