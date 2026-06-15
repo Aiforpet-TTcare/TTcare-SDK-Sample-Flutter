@@ -233,7 +233,6 @@ Detected symptoms include model output and image URLs:
 
 | Field | Description |
 | --- | --- |
-| `modelName` | Internal model label used for this symptom result |
 | `abnormLevel` | Abnormality level calculated by the SDK |
 | `score` | Model score for the symptom |
 | `cropImageUrl` | HTTPS URL for the crop image |
@@ -295,7 +294,6 @@ Image.network(heatmapUrl);
     "symptoms": [
       {
         "code": "opacity",
-        "modelName": "aaaa1",
         "abnormLevel": 1,
         "score": 0.53,
         "cropImageUrl": "https://cdn-results.ai4pet.com/.../diagnosis_crop",

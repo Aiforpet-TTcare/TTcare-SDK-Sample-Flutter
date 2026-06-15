@@ -233,7 +233,6 @@ SDK 결과 JSON에는 아래 필드가 포함될 수 있습니다.
 
 | 필드 | 설명 |
 | --- | --- |
-| `modelName` | 해당 증상 결과에 사용된 내부 모델 라벨 |
 | `abnormLevel` | SDK가 계산한 이상 수준 |
 | `score` | 증상에 대한 모델 점수 |
 | `cropImageUrl` | 크롭 이미지 HTTPS URL |
@@ -295,7 +294,6 @@ Image.network(heatmapUrl);
     "symptoms": [
       {
         "code": "opacity",
-        "modelName": "aaaa1",
         "abnormLevel": 1,
         "score": 0.53,
         "cropImageUrl": "https://cdn-results.ai4pet.com/.../diagnosis_crop",
