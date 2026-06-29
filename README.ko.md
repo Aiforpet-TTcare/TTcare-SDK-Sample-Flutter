@@ -10,10 +10,10 @@
 
 | 플랫폼 | 네이티브 SDK |
 | --- | --- |
-| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.1` |
+| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.2` |
 | iOS | `AIScan 2.0.3` |
 
-Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.1은 결과 화면에서 영어, 한국어, 일본어, 이탈리아어, 스웨덴어, 태국어 현지화를 지원합니다.
+Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.2에는 버그 수정 및 안정성 개선이 포함되어 있으며, 결과 화면에서 영어, 한국어, 일본어, 이탈리아어, 스웨덴어, 태국어 현지화를 지원합니다.
 
 ## 이 샘플이 제공하는 것
 

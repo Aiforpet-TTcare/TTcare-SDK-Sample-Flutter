@@ -10,10 +10,10 @@ The README is written so Flutter integrators can understand the Android native S
 
 | Platform | Native SDK |
 | --- | --- |
-| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.1` |
+| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.2` |
 | iOS | `AIScan 2.0.3` |
 
-Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.1 supports result screen localization for English, Korean, Japanese, Italian, Swedish, and Thai.
+Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.2 includes bug fixes and stability improvements, and supports result screen localization for English, Korean, Japanese, Italian, Swedish, and Thai.
 
 ## What This Sample Provides
 
