@@ -10,7 +10,7 @@ const Color _kBackgroundColor = Color(0xFF1E2E58);
 const Color _kDogCardColor = Color(0xFF0C50A1);
 const Color _kCatCardColor = Color(0xFF6DA8AA);
 const String _kSdkKey = 'Enter your issued SDK key';
-const String _kPetName = 'TTcare';
+const String _kPetName = 'Coco';
 
 class PetSection {
   const PetSection({required this.petType, required this.color, required this.parts});
