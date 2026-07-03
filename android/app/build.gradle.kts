@@ -54,5 +54,5 @@ flutter {
 }
 
 dependencies {
-    implementation("io.github.aiforpet-ttcare:scansdk-lib:2.1.2")
+    implementation("io.github.aiforpet-ttcare:scansdk-lib:2.1.3")
 }

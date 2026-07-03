@@ -8,7 +8,6 @@ import io.flutter.plugin.common.MethodChannel
 import com.aiforpet.pet.check.EyeCameraActivity
 import com.aiforpet.pet.check.SkinCameraActivity
 import com.aiforpet.pet.check.ToothCameraActivity
-import org.json.JSONObject
 import java.util.Locale
 
 class MainActivity : FlutterActivity() {
@@ -27,8 +26,9 @@ class MainActivity : FlutterActivity() {
                 val enableResultView = call.argument<Boolean>("enableResultView") ?: true
                 val enablePdfShare = call.argument<Boolean>("enablePdfShare") ?: true
                 val sdkKey = call.argument<String>("sdkKey") ?: ""
+                val petName = call.argument<String>("petName") ?: "TTcare"
 
-                launchSdkActivity(petType, partType, enablesQuestionnaire, enableResultView, enablePdfShare, sdkKey)
+                launchSdkActivity(petType, partType, enablesQuestionnaire, enableResultView, enablePdfShare, sdkKey, petName)
             } else {
                 result.notImplemented()
             }
@@ -41,7 +41,8 @@ class MainActivity : FlutterActivity() {
         enablesQuestionnaire: Boolean,
         enableResultView: Boolean,
         enablePdfShare: Boolean,
-        sdkKey: String
+        sdkKey: String,
+        petName: String
     ) {
         val selectLang = getCurrentLanguageCategory()
         val guideBase = "https://resource-core.aiforpetcdn.com/sdk/guide/$selectLang/${petType.lowercase(Locale.ROOT)}/"
@@ -69,21 +70,17 @@ class MainActivity : FlutterActivity() {
         }
 
         val intent = Intent(this, activityClass)
-        
-        val petAdditionalInfo = JSONObject()
-        petAdditionalInfo.put("innerData", "innerData")
-
         val bundle = Bundle().apply {
             putString("petType", petType)
             putString("userId", "userId")
             putString("petId", "petId")
+            putString("petName", petName)
             putString("petBirthday", "2025-01-01")
             putString("petBreedName", "petBreedName")
             putString("petGender", "M")
             putBoolean("enablesQuestionnaire", enablesQuestionnaire)
             putBoolean("enableResultView", enableResultView)
             putBoolean("enablePdfShare", enablePdfShare)
-            putString("petAdditionalInfo", petAdditionalInfo.toString())
             putString("sdkKey", sdkKey)
             putString("guideUrl", guideUrl)
             

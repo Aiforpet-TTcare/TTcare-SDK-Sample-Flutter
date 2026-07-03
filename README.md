@@ -10,10 +10,10 @@ The README is written so Flutter integrators can understand the Android native S
 
 | Platform | Native SDK |
 | --- | --- |
-| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.2` |
+| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.3` |
 | iOS | `AIScan 2.0.3` |
 
-Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.2 includes bug fixes and stability improvements, and supports result screen localization for English, Korean, Japanese, Italian, Swedish, and Thai.
+Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.3 adds `petName` to the launch contract, aligns the public result JSON with the latest response format, and supports result screen localization for English, Korean, Japanese, Italian, Swedish, and Thai.
 
 ## What This Sample Provides
 
@@ -53,7 +53,8 @@ Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.2 includes bug fixe
   "enablesQuestionnaire": true,
   "enableResultView": true,
   "enablePdfShare": true,
-  "sdkKey": "Enter your issued SDK key"
+  "sdkKey": "Enter your issued SDK key",
+  "petName": "Coco"
 }
 ```
 
@@ -64,6 +65,7 @@ Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.2 includes bug fixe
 | `petType` | String | Yes | `DOG` or `CAT` |
 | `partType` | String | Yes | Flutter sample value: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH` |
 | `sdkKey` | String | Yes | SDK key issued for your project |
+| `petName` | String | No | Pet name forwarded to the Android SDK for the built-in result screen and PDF report text |
 | `enablesQuestionnaire` | Boolean | No | Controls SDK questionnaire usage. Default in this sample: `true` |
 | `enableResultView` | Boolean | No | Controls whether the SDK built-in result screen is shown. Default in this sample: `true` |
 | `enablePdfShare` | Boolean | No | Controls whether the built-in result screen shows the PDF share button. Default in this sample: `true` |
@@ -105,10 +107,10 @@ If you extend `android/app/src/main/kotlin/.../MainActivity.kt`, use the followi
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | `petId` | String | none | Pet identifier from your service |
+| `petName` | String | none | Pet name used in the built-in result screen and PDF report text |
 | `petBirthday` | String | none | Pet birthday. `yyyy-MM-dd` recommended |
 | `petBreedName` | String | none | Breed name |
 | `petGender` | String | none | `M`, `F`, `MC`, `FC` |
-| `petAdditionalInfo` | String | none | Additional metadata. JSON string recommended |
 | `guideUrl` | String | none | SDK guide web view URL |
 | `isFlashMode` | Boolean | `false` | Whether flash starts enabled |
 | `enablesQuestionnaire` | Boolean | `true` | Whether to use the SDK questionnaire |
@@ -124,13 +126,13 @@ val bundle = Bundle().apply {
     putString("petType", petType)
     putString("userId", "userId")
     putString("petId", "petId")
+    putString("petName", petName)
     putString("petBirthday", "2025-01-01")
     putString("petBreedName", "petBreedName")
     putString("petGender", "M")
     putBoolean("enablesQuestionnaire", enablesQuestionnaire)
     putBoolean("enableResultView", enableResultView)
     putBoolean("enablePdfShare", enablePdfShare)
-    putString("petAdditionalInfo", petAdditionalInfo.toString())
     putString("sdkKey", sdkKey)
     putString("guideUrl", guideUrl)
 
@@ -184,8 +186,11 @@ The SDK result JSON can include:
 | `createdAt` | Analysis creation time |
 | `questions` | Questionnaire answers when questionnaire is enabled |
 | `response` | User-facing result summary |
+| `userId` | User identifier passed through the Android bridge |
+| `petId` | Pet identifier passed through the Android bridge, when provided |
+| `subPart` | Detailed position code, such as `EYEL`, `EAR`, or `TCENTER`, when available |
 
-Depending on scan type and SDK configuration, the result may also include host app metadata such as `userId`, `petId`, `petBirthday`, `petBreedName`, `petGender`, `petAdditionalInfo`, or detailed position values.
+The public result JSON no longer includes a `metadata` object. Internal model fields such as `score`, `predValues`, `pred_values`, and `modelName` are not returned to Flutter.
 
 `response.status` is one of:
 
@@ -213,15 +218,6 @@ When `enablesQuestionnaire=true`, the Android SDK combines questionnaire answers
 | `text` | Questionnaire question text |
 | `select` | User answer, `Y` or `N` |
 
-`metadata` contains pet data passed by the native bridge.
-
-| Field | Description |
-| --- | --- |
-| `petBirthday` | Pet birthday passed in the Android Bundle |
-| `petBreedName` | Breed name passed in the Android Bundle |
-| `petGender` | `M`, `F`, `MC`, or `FC` |
-| `petAdditionalInfo` | Parsed additional metadata when JSON string data is provided |
-
 `response.description` is result-level guidance for UI rendering.
 
 | Field | Description |
@@ -234,7 +230,6 @@ Detected symptoms include model output and image URLs:
 | Field | Description |
 | --- | --- |
 | `abnormLevel` | Abnormality level calculated by the SDK |
-| `score` | Model score for the symptom |
 | `cropImageUrl` | HTTPS URL for the crop image |
 | `heatmapUrl` | HTTPS URL for the heatmap image |
 | `isAbnormal` | Whether the symptom is judged abnormal |
@@ -277,6 +272,9 @@ Image.network(heatmapUrl);
   "petType": "DOG",
   "part": "EYE",
   "createdAt": 1781485248231,
+  "userId": "userId",
+  "petId": "petId",
+  "subPart": "EYEL",
   "questions": [
     { "text": "Are the pupil sizes different?", "select": "N" }
   ],
@@ -295,7 +293,6 @@ Image.network(heatmapUrl);
       {
         "code": "opacity",
         "abnormLevel": 1,
-        "score": 0.53,
         "cropImageUrl": "https://cdn-results.ai4pet.com/.../diagnosis_crop",
         "name": "Opacity",
         "isAbnormal": true,

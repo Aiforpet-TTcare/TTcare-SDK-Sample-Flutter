@@ -10,10 +10,10 @@
 
 | プラットフォーム | ネイティブ SDK |
 | --- | --- |
-| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.2` |
+| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.3` |
 | iOS | `AIScan 2.0.3` |
 
-Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.1.2 には不具合修正と安定性の向上が含まれており、結果画面のローカライズとして英語、韓国語、日本語、イタリア語、スウェーデン語、タイ語をサポートします。
+Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.1.3 では SDK 起動規則に `petName` が追加され、公開結果 JSON が最新のレスポンス形式に整理され、結果画面のローカライズとして英語、韓国語、日本語、イタリア語、スウェーデン語、タイ語をサポートします。
 
 ## このサンプルが提供するもの
 
@@ -53,7 +53,8 @@ Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.1.2 に�
   "enablesQuestionnaire": true,
   "enableResultView": true,
   "enablePdfShare": true,
-  "sdkKey": "Enter your issued SDK key"
+  "sdkKey": "Enter your issued SDK key",
+  "petName": "Coco"
 }
 ```
 
@@ -64,6 +65,7 @@ Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.1.2 に�
 | `petType` | String | はい | `DOG` または `CAT` |
 | `partType` | String | はい | Flutter サンプル値: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH` |
 | `sdkKey` | String | はい | プロジェクト用に発行された SDK key |
+| `petName` | String | いいえ | Android SDK の内蔵結果画面および PDF レポート文言に渡すペット名 |
 | `enablesQuestionnaire` | Boolean | いいえ | SDK 問診を使用するか。サンプルのデフォルト: `true` |
 | `enableResultView` | Boolean | いいえ | SDK 内蔵結果画面を表示するか。サンプルのデフォルト: `true` |
 | `enablePdfShare` | Boolean | いいえ | 内蔵結果画面に PDF 共有ボタンを表示するか。サンプルのデフォルト: `true` |
@@ -108,7 +110,6 @@ Android ブリッジは Flutter の `partType` 値をネイティブ SDK Activit
 | `petBirthday` | String | なし | ペットの誕生日。`yyyy-MM-dd` 形式推奨 |
 | `petBreedName` | String | なし | 品種名 |
 | `petGender` | String | なし | `M`, `F`, `MC`, `FC` |
-| `petAdditionalInfo` | String | なし | 追加メタデータ。JSON 文字列推奨 |
 | `guideUrl` | String | なし | SDK 撮影ガイド WebView URL |
 | `isFlashMode` | Boolean | `false` | 撮影時にフラッシュを初期有効にするか |
 | `enablesQuestionnaire` | Boolean | `true` | SDK 問診を使用するか |
@@ -124,13 +125,13 @@ val bundle = Bundle().apply {
     putString("petType", petType)
     putString("userId", "userId")
     putString("petId", "petId")
+    putString("petName", petName)
     putString("petBirthday", "2025-01-01")
     putString("petBreedName", "petBreedName")
     putString("petGender", "M")
     putBoolean("enablesQuestionnaire", enablesQuestionnaire)
     putBoolean("enableResultView", enableResultView)
     putBoolean("enablePdfShare", enablePdfShare)
-    putString("petAdditionalInfo", petAdditionalInfo.toString())
     putString("sdkKey", sdkKey)
     putString("guideUrl", guideUrl)
 
@@ -184,8 +185,11 @@ SDK 結果 JSON には以下のフィールドが含まれる場合がありま�
 | `createdAt` | 解析生成時刻 |
 | `questions` | 問診使用時の問診回答 |
 | `response` | ユーザー表示用の結果要約 |
+| `userId` | Android ブリッジ経由で渡したユーザー識別子 |
+| `petId` | Android ブリッジ経由で渡したペット識別子 |
+| `subPart` | 可能な場合の `EYEL`, `EAR`, `TCENTER` などの詳細位置コード |
 
-スキャン種別や SDK 設定によって、`userId`, `petId`, `petBirthday`, `petBreedName`, `petGender`, `petAdditionalInfo`、詳細位置などが追加で含まれる場合があります。
+公開結果 JSON には `metadata` オブジェクトは含まれません。`score`, `predValues`, `pred_values`, `modelName` などの内部モデルフィールドは Flutter には返されません。
 
 `response.status` は以下のいずれかです。
 
@@ -213,15 +217,6 @@ SDK 結果 JSON には以下のフィールドが含まれる場合がありま�
 | `text` | 問診質問テキスト |
 | `select` | ユーザー回答。`Y` または `N` |
 
-`metadata` には、ネイティブブリッジから渡されたペットデータが含まれます。
-
-| フィールド | 説明 |
-| --- | --- |
-| `petBirthday` | Android Bundle で渡したペットの誕生日 |
-| `petBreedName` | Android Bundle で渡した品種名 |
-| `petGender` | `M`, `F`, `MC`, `FC` |
-| `petAdditionalInfo` | JSON 文字列を渡した場合にパースされた追加メタデータ |
-
 `response.description` は UI 表示用の結果レベル案内文です。
 
 | フィールド | 説明 |
@@ -234,7 +229,6 @@ SDK 結果 JSON には以下のフィールドが含まれる場合がありま�
 | フィールド | 説明 |
 | --- | --- |
 | `abnormLevel` | SDK が算出した異常レベル |
-| `score` | 症状に対するモデルスコア |
 | `cropImageUrl` | クロップ画像の HTTPS URL |
 | `heatmapUrl` | ヒートマップ画像の HTTPS URL |
 | `isAbnormal` | この症状が異常と判定されたか |
@@ -277,6 +271,9 @@ Image.network(heatmapUrl);
   "petType": "DOG",
   "part": "EYE",
   "createdAt": 1781485248231,
+  "userId": "userId",
+  "petId": "petId",
+  "subPart": "EYEL",
   "questions": [
     { "text": "瞳孔の大きさが左右で違いますか？", "select": "N" }
   ],
@@ -295,7 +292,6 @@ Image.network(heatmapUrl);
       {
         "code": "opacity",
         "abnormLevel": 1,
-        "score": 0.53,
         "cropImageUrl": "https://cdn-results.ai4pet.com/.../diagnosis_crop",
         "name": "混濁",
         "isAbnormal": true,

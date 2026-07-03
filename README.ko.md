@@ -10,10 +10,10 @@
 
 | 플랫폼 | 네이티브 SDK |
 | --- | --- |
-| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.2` |
+| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.3` |
 | iOS | `AIScan 2.0.3` |
 
-Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.2에는 버그 수정 및 안정성 개선이 포함되어 있으며, 결과 화면에서 영어, 한국어, 일본어, 이탈리아어, 스웨덴어, 태국어 현지화를 지원합니다.
+Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.3에서는 SDK 호출 규칙에 `petName`이 추가되었고, 공개 결과 JSON이 최신 응답 포맷에 맞게 정리되었으며, 결과 화면에서 영어, 한국어, 일본어, 이탈리아어, 스웨덴어, 태국어 현지화를 지원합니다.
 
 ## 이 샘플이 제공하는 것
 
@@ -53,7 +53,8 @@ Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.2
   "enablesQuestionnaire": true,
   "enableResultView": true,
   "enablePdfShare": true,
-  "sdkKey": "Enter your issued SDK key"
+  "sdkKey": "Enter your issued SDK key",
+  "petName": "Coco"
 }
 ```
 
@@ -64,6 +65,7 @@ Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.2
 | `petType` | String | 예 | `DOG` 또는 `CAT` |
 | `partType` | String | 예 | Flutter 샘플 값: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH` |
 | `sdkKey` | String | 예 | 프로젝트용으로 발급받은 SDK key |
+| `petName` | String | 아니오 | Android SDK 내장 결과 화면 및 PDF 리포트 문구에 전달할 반려동물 이름 |
 | `enablesQuestionnaire` | Boolean | 아니오 | SDK 문진 사용 여부. 이 샘플 기본값: `true` |
 | `enableResultView` | Boolean | 아니오 | SDK 내장 결과 화면 표시 여부. 이 샘플 기본값: `true` |
 | `enablePdfShare` | Boolean | 아니오 | 내장 결과 화면의 PDF 공유 버튼 표시 여부. 이 샘플 기본값: `true` |
@@ -108,7 +110,6 @@ Android 브릿지는 Flutter `partType` 값을 네이티브 SDK Activity로 매�
 | `petBirthday` | String | 없음 | 반려동물 생일. `yyyy-MM-dd` 형식 권장 |
 | `petBreedName` | String | 없음 | 품종명 |
 | `petGender` | String | 없음 | `M`, `F`, `MC`, `FC` |
-| `petAdditionalInfo` | String | 없음 | 추가 메타데이터. JSON 문자열 권장 |
 | `guideUrl` | String | 없음 | SDK 촬영 가이드 웹뷰 URL |
 | `isFlashMode` | Boolean | `false` | 촬영 시 플래시 기본 활성화 여부 |
 | `enablesQuestionnaire` | Boolean | `true` | SDK 문진 사용 여부 |
@@ -124,13 +125,13 @@ val bundle = Bundle().apply {
     putString("petType", petType)
     putString("userId", "userId")
     putString("petId", "petId")
+    putString("petName", petName)
     putString("petBirthday", "2025-01-01")
     putString("petBreedName", "petBreedName")
     putString("petGender", "M")
     putBoolean("enablesQuestionnaire", enablesQuestionnaire)
     putBoolean("enableResultView", enableResultView)
     putBoolean("enablePdfShare", enablePdfShare)
-    putString("petAdditionalInfo", petAdditionalInfo.toString())
     putString("sdkKey", sdkKey)
     putString("guideUrl", guideUrl)
 
@@ -184,8 +185,11 @@ SDK 결과 JSON에는 아래 필드가 포함될 수 있습니다.
 | `createdAt` | 분석 생성 시각 |
 | `questions` | 문진 사용 시 문진 응답 |
 | `response` | 사용자 표시용 결과 요약 |
+| `userId` | Android 브릿지를 통해 전달한 사용자 식별자 |
+| `petId` | Android 브릿지를 통해 전달한 반려동물 식별자 |
+| `subPart` | 가능한 경우 `EYEL`, `EAR`, `TCENTER` 같은 상세 위치 코드 |
 
-검사 종류와 SDK 설정에 따라 `userId`, `petId`, `petBirthday`, `petBreedName`, `petGender`, `petAdditionalInfo`, 상세 위치 값 등이 함께 포함될 수 있습니다.
+공개 결과 JSON에는 더 이상 `metadata` 객체가 포함되지 않습니다. `score`, `predValues`, `pred_values`, `modelName` 같은 내부 모델 필드는 Flutter로 반환되지 않습니다.
 
 `response.status`는 아래 중 하나입니다.
 
@@ -213,15 +217,6 @@ SDK 결과 JSON에는 아래 필드가 포함될 수 있습니다.
 | `text` | 문진 질문 텍스트 |
 | `select` | 사용자 응답. `Y` 또는 `N` |
 
-`metadata`에는 네이티브 브릿지에서 전달한 반려동물 데이터가 포함됩니다.
-
-| 필드 | 설명 |
-| --- | --- |
-| `petBirthday` | Android Bundle로 전달한 반려동물 생일 |
-| `petBreedName` | Android Bundle로 전달한 품종명 |
-| `petGender` | `M`, `F`, `MC`, `FC` |
-| `petAdditionalInfo` | JSON 문자열을 전달한 경우 파싱된 추가 메타데이터 |
-
 `response.description`은 UI 표시를 위한 결과 수준의 안내 문구입니다.
 
 | 필드 | 설명 |
@@ -234,7 +229,6 @@ SDK 결과 JSON에는 아래 필드가 포함될 수 있습니다.
 | 필드 | 설명 |
 | --- | --- |
 | `abnormLevel` | SDK가 계산한 이상 수준 |
-| `score` | 증상에 대한 모델 점수 |
 | `cropImageUrl` | 크롭 이미지 HTTPS URL |
 | `heatmapUrl` | 히트맵 이미지 HTTPS URL |
 | `isAbnormal` | 해당 증상이 이상으로 판단되었는지 여부 |
@@ -277,6 +271,9 @@ Image.network(heatmapUrl);
   "petType": "DOG",
   "part": "EYE",
   "createdAt": 1781485248231,
+  "userId": "userId",
+  "petId": "petId",
+  "subPart": "EYEL",
   "questions": [
     { "text": "동공 크기가 서로 다른가요?", "select": "N" }
   ],
@@ -295,7 +292,6 @@ Image.network(heatmapUrl);
       {
         "code": "opacity",
         "abnormLevel": 1,
-        "score": 0.53,
         "cropImageUrl": "https://cdn-results.ai4pet.com/.../diagnosis_crop",
         "name": "혼탁",
         "isAbnormal": true,
