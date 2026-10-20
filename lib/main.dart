@@ -62,6 +62,7 @@ class _StartActivityScreenState extends State<StartActivityScreen> {
   bool enablesQuestionnaire = true;
   bool enableResultView = true;
   bool enablePdfShare = true;
+  bool enableMultiMode = false;
 
   String? resultText;
   bool showResultView = false;
@@ -74,6 +75,7 @@ class _StartActivityScreenState extends State<StartActivityScreen> {
         'enablesQuestionnaire': enablesQuestionnaire,
         'enableResultView': enableResultView,
         'enablePdfShare': enablePdfShare,
+        'enableMultiMode': enableMultiMode,
         'sdkKey': _kSdkKey,
         'petName': _kPetName,
       });
@@ -182,6 +184,9 @@ class _StartActivityScreenState extends State<StartActivityScreen> {
                 }),
                 _buildOptionRow('enablePdfShare', enablePdfShare, (val) {
                   setState(() => enablePdfShare = val ?? true);
+                }),
+                _buildOptionRow('enableMultiMode (TTAPI)', enableMultiMode, (val) {
+                  setState(() => enableMultiMode = val ?? false);
                 }),
                 
                 Expanded(

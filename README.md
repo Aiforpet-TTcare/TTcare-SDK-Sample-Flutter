@@ -10,10 +10,10 @@ The README is written so Flutter integrators can understand the Android native S
 
 | Platform | Native SDK |
 | --- | --- |
-| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.3` |
+| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.2.3` |
 | iOS | `AIScan 2.0.3` |
 
-Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.3 adds `petName` to the launch contract, aligns the public result JSON with the latest response format, and supports result screen localization for English, Korean, Japanese, Italian, Swedish, and Thai.
+Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.2.3 adds optional TTAPI multi-photo mode while preserving the existing single-photo contract by default.
 
 ## What This Sample Provides
 
@@ -30,6 +30,7 @@ Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.3 adds `petName` to
   - `enableQuestionnaire`
   - `enableResultView`
   - `enablePdfShare`
+  - `enableMultiMode` (Android TTAPI only)
 - Body: pet and scan-part cards
   - DOG: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH`
   - CAT: `EYE`, `TEETH`
@@ -53,6 +54,7 @@ Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.3 adds `petName` to
   "enablesQuestionnaire": true,
   "enableResultView": true,
   "enablePdfShare": true,
+  "enableMultiMode": false,
   "sdkKey": "Enter your issued SDK key",
   "petName": "Coco"
 }
@@ -69,6 +71,7 @@ Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.3 adds `petName` to
 | `enablesQuestionnaire` | Boolean | No | Controls SDK questionnaire usage. Default in this sample: `true` |
 | `enableResultView` | Boolean | No | Controls whether the SDK built-in result screen is shown. Default in this sample: `true` |
 | `enablePdfShare` | Boolean | No | Controls whether the built-in result screen shows the PDF share button. Default in this sample: `true` |
+| `enableMultiMode` | Boolean | No | Android TTAPI only. Enables up to four photos. Default: `false` |
 
 ### Part Mapping on Android
 
@@ -116,6 +119,7 @@ If you extend `android/app/src/main/kotlin/.../MainActivity.kt`, use the followi
 | `enablesQuestionnaire` | Boolean | `true` | Whether to use the SDK questionnaire |
 | `enableResultView` | Boolean | `true` | Whether to show the SDK built-in result screen |
 | `enablePdfShare` | Boolean | `false` | Whether to show the PDF share button on the SDK result screen |
+| `enableMultiMode` | Boolean | `false` | TTAPI only. Whether to collect and analyze up to four photos |
 
 ## Android Native Bridge Example
 
@@ -133,6 +137,7 @@ val bundle = Bundle().apply {
     putBoolean("enablesQuestionnaire", enablesQuestionnaire)
     putBoolean("enableResultView", enableResultView)
     putBoolean("enablePdfShare", enablePdfShare)
+    putBoolean("enableMultiMode", enableMultiMode)
     putString("sdkKey", sdkKey)
     putString("guideUrl", guideUrl)
 
@@ -164,6 +169,13 @@ Replace the sample values such as `userId`, `petId`, `petBirthday`, and `petBree
 
 `enablePdfShare` is meaningful when `enableResultView=true`.
 
+### `enableMultiMode`
+
+- `false` or omitted: keeps the existing single-photo flow and one result object.
+- `true` with `analysis_mode=ttapi`: collects and analyzes up to four eye, skin, or teeth photos.
+
+The option is not applied to Android on-device or hybrid analysis. TTAPI multi-photo mode still returns a String through the channel, but the String contains a top-level JSON array in capture order, even for one photo. Inspect each item status independently.
+
 ## Return Value
 
 The channel returns:
@@ -172,7 +184,7 @@ The channel returns:
 String?
 ```
 
-If the returned value is JSON, the sample pretty-prints it with 4-space indentation and shows it in a Flutter overlay.
+If the returned value is JSON, the sample pretty-prints either the single-result object or the TTAPI multi-result array with 4-space indentation and shows it in a Flutter overlay.
 
 ## Result JSON Overview
 

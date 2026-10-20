@@ -10,10 +10,10 @@
 
 | プラットフォーム | ネイティブ SDK |
 | --- | --- |
-| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.3` |
+| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.2.3` |
 | iOS | `AIScan 2.0.3` |
 
-Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.1.3 では SDK 起動規則に `petName` が追加され、公開結果 JSON が最新のレスポンス形式に整理され、結果画面のローカライズとして英語、韓国語、日本語、イタリア語、スウェーデン語、タイ語をサポートします。
+Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.2.3 では、既存の単一撮影契約を既定値として維持しながら、任意の TTAPI マルチ撮影を追加しました。
 
 ## このサンプルが提供するもの
 
@@ -30,6 +30,7 @@ Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.1.3 で�
   - `enableQuestionnaire`
   - `enableResultView`
   - `enablePdfShare`
+  - `enableMultiMode`（Android TTAPI 専用）
 - 画面本体: ペット種別と検査部位カード
   - DOG: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH`
   - CAT: `EYE`, `TEETH`
@@ -53,6 +54,7 @@ Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.1.3 で�
   "enablesQuestionnaire": true,
   "enableResultView": true,
   "enablePdfShare": true,
+  "enableMultiMode": false,
   "sdkKey": "Enter your issued SDK key",
   "petName": "Coco"
 }
@@ -69,6 +71,7 @@ Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.1.3 で�
 | `enablesQuestionnaire` | Boolean | いいえ | SDK 問診を使用するか。サンプルのデフォルト: `true` |
 | `enableResultView` | Boolean | いいえ | SDK 内蔵結果画面を表示するか。サンプルのデフォルト: `true` |
 | `enablePdfShare` | Boolean | いいえ | 内蔵結果画面に PDF 共有ボタンを表示するか。サンプルのデフォルト: `true` |
+| `enableMultiMode` | Boolean | いいえ | Android TTAPI 専用。最大4枚の撮影を有効にします。既定値: `false` |
 
 ### Android 部位マッピング
 
@@ -115,6 +118,7 @@ Android ブリッジは Flutter の `partType` 値をネイティブ SDK Activit
 | `enablesQuestionnaire` | Boolean | `true` | SDK 問診を使用するか |
 | `enableResultView` | Boolean | `true` | SDK 内蔵結果画面を表示するか |
 | `enablePdfShare` | Boolean | `false` | SDK 結果画面に PDF 共有ボタンを表示するか |
+| `enableMultiMode` | Boolean | `false` | TTAPI で最大4枚を収集・解析するか |
 
 ## Android ネイティブブリッジ例
 
@@ -132,6 +136,7 @@ val bundle = Bundle().apply {
     putBoolean("enablesQuestionnaire", enablesQuestionnaire)
     putBoolean("enableResultView", enableResultView)
     putBoolean("enablePdfShare", enablePdfShare)
+    putBoolean("enableMultiMode", enableMultiMode)
     putString("sdkKey", sdkKey)
     putString("guideUrl", guideUrl)
 
@@ -163,6 +168,13 @@ val bundle = Bundle().apply {
 
 `enablePdfShare` は `enableResultView=true` の場合に有効です。
 
+### `enableMultiMode`
+
+- `false` または未指定: 従来の単一撮影と1つの結果オブジェクトを維持します。
+- `true` + `analysis_mode=ttapi`: 目・皮膚・歯の写真を最大4枚収集して解析します。
+
+Android のオンデバイスおよびハイブリッド解析にはこのオプションを適用しません。TTAPI マルチ撮影でもチャンネルの戻り値型は String ですが、1枚だけ送信した場合も文字列の最上位構造は撮影順の JSON 配列です。各要素の状態を個別に確認してください。
+
 ## 戻り値
 
 チャネルの戻り値は以下の型です。
@@ -171,7 +183,7 @@ val bundle = Bundle().apply {
 String?
 ```
 
-戻り値が JSON の場合、サンプルアプリは 4 スペースで整形して Flutter オーバーレイに表示します。
+戻り値が JSON の場合、サンプルアプリは単一結果オブジェクトまたは TTAPI マルチ結果配列を 4 スペースで整形して Flutter オーバーレイに表示します。
 
 ## 結果 JSON 概要
 

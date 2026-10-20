@@ -10,10 +10,10 @@
 
 | 플랫폼 | 네이티브 SDK |
 | --- | --- |
-| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.3` |
+| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.2.3` |
 | iOS | `AIScan 2.0.3` |
 
-Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.3에서는 SDK 호출 규칙에 `petName`이 추가되었고, 공개 결과 JSON이 최신 응답 포맷에 맞게 정리되었으며, 결과 화면에서 영어, 한국어, 일본어, 이탈리아어, 스웨덴어, 태국어 현지화를 지원합니다.
+Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.2.3에서는 기존 단건 계약을 기본값으로 유지하면서 선택형 TTAPI 멀티 촬영을 추가했습니다.
 
 ## 이 샘플이 제공하는 것
 
@@ -30,6 +30,7 @@ Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.3
   - `enableQuestionnaire`
   - `enableResultView`
   - `enablePdfShare`
+  - `enableMultiMode` (Android TTAPI 전용)
 - 화면 본문: 펫 종류와 검사 부위 카드
   - DOG: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH`
   - CAT: `EYE`, `TEETH`
@@ -53,6 +54,7 @@ Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.3
   "enablesQuestionnaire": true,
   "enableResultView": true,
   "enablePdfShare": true,
+  "enableMultiMode": false,
   "sdkKey": "Enter your issued SDK key",
   "petName": "Coco"
 }
@@ -69,6 +71,7 @@ Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.3
 | `enablesQuestionnaire` | Boolean | 아니오 | SDK 문진 사용 여부. 이 샘플 기본값: `true` |
 | `enableResultView` | Boolean | 아니오 | SDK 내장 결과 화면 표시 여부. 이 샘플 기본값: `true` |
 | `enablePdfShare` | Boolean | 아니오 | 내장 결과 화면의 PDF 공유 버튼 표시 여부. 이 샘플 기본값: `true` |
+| `enableMultiMode` | Boolean | 아니오 | Android TTAPI 전용. 최대 4장 촬영을 활성화합니다. 기본값: `false` |
 
 ### Android 부위 매핑
 
@@ -115,6 +118,7 @@ Android 브릿지는 Flutter `partType` 값을 네이티브 SDK Activity로 매�
 | `enablesQuestionnaire` | Boolean | `true` | SDK 문진 사용 여부 |
 | `enableResultView` | Boolean | `true` | SDK 내장 결과 화면 표시 여부 |
 | `enablePdfShare` | Boolean | `false` | SDK 결과 화면의 PDF 공유 버튼 표시 여부 |
+| `enableMultiMode` | Boolean | `false` | TTAPI에서 최대 4장을 수집·분석할지 여부 |
 
 ## Android 네이티브 브릿지 예시
 
@@ -132,6 +136,7 @@ val bundle = Bundle().apply {
     putBoolean("enablesQuestionnaire", enablesQuestionnaire)
     putBoolean("enableResultView", enableResultView)
     putBoolean("enablePdfShare", enablePdfShare)
+    putBoolean("enableMultiMode", enableMultiMode)
     putString("sdkKey", sdkKey)
     putString("guideUrl", guideUrl)
 
@@ -163,6 +168,13 @@ val bundle = Bundle().apply {
 
 `enablePdfShare`는 `enableResultView=true`일 때 의미가 있습니다.
 
+### `enableMultiMode`
+
+- `false` 또는 미전달: 기존 단건 촬영과 결과 객체 하나를 유지합니다.
+- `true` + `analysis_mode=ttapi`: 눈·피부·치아 사진을 최대 4장 수집해 분석합니다.
+
+Android 온디바이스와 하이브리드 분석에는 이 옵션을 적용하지 않습니다. TTAPI 멀티 촬영에서도 채널 반환 타입은 String이지만, 한 장만 제출해도 문자열의 최상위 구조는 촬영 순서의 JSON 배열입니다. 각 항목의 상태를 개별 확인하세요.
+
 ## 반환값
 
 채널 반환값은 아래 타입입니다.
@@ -171,7 +183,7 @@ val bundle = Bundle().apply {
 String?
 ```
 
-반환값이 JSON이면 샘플 앱은 들여쓰기 4칸으로 포맷해 Flutter 오버레이에 표시합니다.
+반환값이 JSON이면 샘플 앱은 단건 결과 객체 또는 TTAPI 멀티 결과 배열을 들여쓰기 4칸으로 포맷해 Flutter 오버레이에 표시합니다.
 
 ## 결과 JSON 개요
 

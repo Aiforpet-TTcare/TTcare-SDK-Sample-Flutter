@@ -25,10 +25,11 @@ class MainActivity : FlutterActivity() {
                 val enablesQuestionnaire = call.argument<Boolean>("enablesQuestionnaire") ?: true
                 val enableResultView = call.argument<Boolean>("enableResultView") ?: true
                 val enablePdfShare = call.argument<Boolean>("enablePdfShare") ?: true
+                val enableMultiMode = call.argument<Boolean>("enableMultiMode") ?: false
                 val sdkKey = call.argument<String>("sdkKey") ?: ""
                 val petName = call.argument<String>("petName") ?: "TTcare"
 
-                launchSdkActivity(petType, partType, enablesQuestionnaire, enableResultView, enablePdfShare, sdkKey, petName)
+                launchSdkActivity(petType, partType, enablesQuestionnaire, enableResultView, enablePdfShare, enableMultiMode, sdkKey, petName)
             } else {
                 result.notImplemented()
             }
@@ -41,6 +42,7 @@ class MainActivity : FlutterActivity() {
         enablesQuestionnaire: Boolean,
         enableResultView: Boolean,
         enablePdfShare: Boolean,
+        enableMultiMode: Boolean,
         sdkKey: String,
         petName: String
     ) {
@@ -81,6 +83,7 @@ class MainActivity : FlutterActivity() {
             putBoolean("enablesQuestionnaire", enablesQuestionnaire)
             putBoolean("enableResultView", enableResultView)
             putBoolean("enablePdfShare", enablePdfShare)
+            putBoolean("enableMultiMode", enableMultiMode)
             putString("sdkKey", sdkKey)
             putString("guideUrl", guideUrl)
             
