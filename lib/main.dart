@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -62,6 +63,7 @@ class _StartActivityScreenState extends State<StartActivityScreen> {
   bool enablesQuestionnaire = true;
   bool enableResultView = true;
   bool enablePdfShare = true;
+  bool enableMultiMode = false;
 
   String? resultText;
   bool showResultView = false;
@@ -74,6 +76,7 @@ class _StartActivityScreenState extends State<StartActivityScreen> {
         'enablesQuestionnaire': enablesQuestionnaire,
         'enableResultView': enableResultView,
         'enablePdfShare': enablePdfShare,
+        if (Platform.isAndroid) 'enableMultiMode': enableMultiMode,
         'sdkKey': _kSdkKey,
         'petName': _kPetName,
       });
@@ -183,6 +186,10 @@ class _StartActivityScreenState extends State<StartActivityScreen> {
                 _buildOptionRow('enablePdfShare', enablePdfShare, (val) {
                   setState(() => enablePdfShare = val ?? true);
                 }),
+                if (Platform.isAndroid)
+                  _buildOptionRow('enableMultiMode', enableMultiMode, (val) {
+                    setState(() => enableMultiMode = val ?? false);
+                  }),
                 
                 Expanded(
                   child: ListView(

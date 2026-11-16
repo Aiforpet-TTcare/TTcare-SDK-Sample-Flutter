@@ -10,10 +10,10 @@
 
 | 플랫폼 | 네이티브 SDK |
 | --- | --- |
-| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.3` |
+| Android | `io.github.aiforpet-ttcare:scansdk-lib:3.2.0` |
 | iOS | `AIScan 2.0.3` |
 
-Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.3에서는 SDK 호출 규칙에 `petName`이 추가되었고, 공개 결과 JSON이 최신 응답 포맷에 맞게 정리되었으며, 결과 화면에서 영어, 한국어, 일본어, 이탈리아어, 스웨덴어, 태국어 현지화를 지원합니다.
+Android SDK 3.2.0 자체는 API 23 이상을 지원하지만 이 Flutter 샘플의 현재 설정은 `minSdk 28`입니다. SDK는 기기에서 이미지를 준비한 뒤 서버에서 최종 분석을 받습니다. 준비 중 카메라 프리뷰가 먼저 표시되지만 준비가 끝나기 전에는 촬영할 수 없습니다. 잘못된 SDK 키는 SDK 화면 취소로 처리되므로 발급된 키를 그대로 전달하세요. Android 결과 Bundle과 공개 JSON 키는 3.1.0과 같습니다.
 
 ## 이 샘플이 제공하는 것
 
@@ -30,6 +30,7 @@ Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.3
   - `enableQuestionnaire`
   - `enableResultView`
   - `enablePdfShare`
+  - `enableMultiMode` (Android 전용)
 - 화면 본문: 펫 종류와 검사 부위 카드
   - DOG: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH`
   - CAT: `EYE`, `TEETH`
@@ -53,6 +54,7 @@ Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.3
   "enablesQuestionnaire": true,
   "enableResultView": true,
   "enablePdfShare": true,
+  "enableMultiMode": false,
   "sdkKey": "Enter your issued SDK key",
   "petName": "Coco"
 }
@@ -69,6 +71,7 @@ Android는 Android 9.0 이상(`minSdk 28`)이 필요합니다. Android SDK 2.1.3
 | `enablesQuestionnaire` | Boolean | 아니오 | SDK 문진 사용 여부. 이 샘플 기본값: `true` |
 | `enableResultView` | Boolean | 아니오 | SDK 내장 결과 화면 표시 여부. 이 샘플 기본값: `true` |
 | `enablePdfShare` | Boolean | 아니오 | 내장 결과 화면의 PDF 공유 버튼 표시 여부. 이 샘플 기본값: `true` |
+| `enableMultiMode` | Boolean | 아니오 | Android 전용: 최대 4장 촬영. 기본값: `false` |
 
 ### Android 부위 매핑
 
@@ -107,14 +110,18 @@ Android 브릿지는 Flutter `partType` 값을 네이티브 SDK Activity로 매�
 | 이름 | 타입 | 기본값 | 설명 |
 | --- | --- | --- | --- |
 | `petId` | String | 없음 | 고객사 서비스의 반려동물 식별자 |
+| `petName` | String | 없음 | 내장 결과 화면과 PDF에 사용할 반려동물 이름 |
 | `petBirthday` | String | 없음 | 반려동물 생일. `yyyy-MM-dd` 형식 권장 |
 | `petBreedName` | String | 없음 | 품종명 |
 | `petGender` | String | 없음 | `M`, `F`, `MC`, `FC` |
-| `guideUrl` | String | 없음 | SDK 촬영 가이드 웹뷰 URL |
+| `guideUrl` | String | SDK 기본값 | SDK 촬영 가이드 URL을 바꿀 때만 전달. 샘플은 생략 |
 | `isFlashMode` | Boolean | `false` | 촬영 시 플래시 기본 활성화 여부 |
 | `enablesQuestionnaire` | Boolean | `true` | SDK 문진 사용 여부 |
 | `enableResultView` | Boolean | `true` | SDK 내장 결과 화면 표시 여부 |
-| `enablePdfShare` | Boolean | `false` | SDK 결과 화면의 PDF 공유 버튼 표시 여부 |
+| `enablePdfShare` | Boolean | SDK: `false`; 샘플: `true` | SDK 결과 화면의 PDF 공유 버튼 표시 여부 |
+| `enableMultiMode` | Boolean | `false` | Android 서버 분석에서 최대 4장을 촬영하고 JSON 배열 반환 |
+
+`guideUrl`을 전달하지 않으면 Android SDK 3.2.0은 `https://guide.ai4pet.com/sdk/guide/{locale}/{pet}/{part}`를 언어와 검사 부위에 맞게 선택합니다.
 
 ## Android 네이티브 브릿지 예시
 
@@ -132,8 +139,8 @@ val bundle = Bundle().apply {
     putBoolean("enablesQuestionnaire", enablesQuestionnaire)
     putBoolean("enableResultView", enableResultView)
     putBoolean("enablePdfShare", enablePdfShare)
+    putBoolean("enableMultiMode", enableMultiMode)
     putString("sdkKey", sdkKey)
-    putString("guideUrl", guideUrl)
 
     if (partType == "EAR" || partType == "BODY" || partType == "FOOT") {
         val nativePartType = if (partType == "BODY") "BELLY" else partType
@@ -148,7 +155,7 @@ val bundle = Bundle().apply {
 
 ### `enablesQuestionnaire`
 
-- `true`: SDK 문진을 사용하며, 문진 응답이 최종 상태에 반영될 수 있습니다.
+- `true`: SDK 문진을 사용합니다. 최종 상태는 서버가 반환한 값을 따르세요.
 - `false`: 문진 없이 진행합니다.
 
 ### `enableResultView`
@@ -163,6 +170,11 @@ val bundle = Bundle().apply {
 
 `enablePdfShare`는 `enableResultView=true`일 때 의미가 있습니다.
 
+### `enableMultiMode` (Android 전용)
+
+- `false`(기본값): 단건 결과를 JSON 객체 하나로 반환합니다.
+- `true`: 최대 4장을 분석하며 한 장만 제출해도 JSON 문자열의 최상위는 촬영 순서의 배열입니다. 각 항목의 상태를 개별 확인하세요.
+
 ## 반환값
 
 채널 반환값은 아래 타입입니다.
@@ -171,7 +183,7 @@ val bundle = Bundle().apply {
 String?
 ```
 
-반환값이 JSON이면 샘플 앱은 들여쓰기 4칸으로 포맷해 Flutter 오버레이에 표시합니다.
+채널은 네이티브 JSON 문자열을 그대로 반환합니다. 샘플은 객체와 배열을 모두 들여쓰기 4칸으로 포맷해 Flutter 오버레이에 표시합니다.
 
 ## 결과 JSON 개요
 
@@ -199,14 +211,7 @@ SDK 결과 JSON에는 아래 필드가 포함될 수 있습니다.
 | `CAUTION` | 관찰이 권장되는 상태 |
 | `WARNING` | 후속 확인이 권장되는 상태 |
 
-`enablesQuestionnaire=true`인 경우 Android SDK는 문진 응답과 AI 스캔 결과를 조합하여 최종 상태를 결정합니다.
-
-| 문진 응답 | AI 스캔 결과 | 최종 상태 |
-| --- | --- | --- |
-| 증상 있음 | 이상 징후 감지 | `WARNING` |
-| 증상 없음 | 이상 징후 감지 | `CAUTION` |
-| 증상 없음 | 이상 징후 없음 | `NORMAL` |
-| 증상 있음 | 이상 징후 없음 | `CAUTION` |
+최종 상태는 서버 응답을 따릅니다. 호스트 앱에서 문진 답변으로 상태를 다시 계산하거나 덮어쓰지 마세요.
 
 ### 상세 결과 블록
 
@@ -328,9 +333,11 @@ iOS 샘플은 `AIScan 2.0.3`을 사용합니다.
 
 ## Android ProGuard / R8
 
-R8 minification을 적용하는 release 빌드는 JNI 참조 클래스 keep rule이 필요합니다. 샘플에는 `android/app/proguard-rules.pro`에 필요한 규칙이 이미 포함되어 있고 release 빌드 타입에 연결되어 있습니다.
+SDK에는 소비자용 R8 규칙이 포함되어 있습니다. 샘플의 `android/app/proguard-rules.pro`에는 앱용 규칙도 있으며, 배포 전 릴리즈 빌드를 검증하세요.
 
 ## 실행
+
+Android 샘플은 JDK 17로 빌드하세요. 이 프로젝트는 Gradle 8.14, AGP 8.11.1, Kotlin 2.2.20을 사용합니다. Flutter가 Android Studio의 최신 JDK를 선택한다면 `flutter doctor -v`로 확인하고 `flutter config --jdk-dir=<JDK_17_PATH>`로 JDK 17 경로를 지정하세요.
 
 ```bash
 flutter pub get
