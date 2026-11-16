@@ -10,10 +10,10 @@ The README is written so Flutter integrators can understand the Android native S
 
 | Platform | Native SDK |
 | --- | --- |
-| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.3` |
+| Android | `io.github.aiforpet-ttcare:scansdk-lib:3.2.0` |
 | iOS | `AIScan 2.0.3` |
 
-Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.3 adds `petName` to the launch contract, aligns the public result JSON with the latest response format, and supports result screen localization for English, Korean, Japanese, Italian, Swedish, and Thai.
+Android SDK 3.2.0 supports API 23+, while this Flutter sample currently sets `minSdk 28`. The SDK prepares images on-device and obtains final analysis from the server. Camera preview appears during preparation, but capture stays disabled until ready. An invalid SDK key cancels the SDK activity; pass the issued key unchanged. The Android result Bundle and public JSON keys are unchanged from 3.1.0.
 
 ## What This Sample Provides
 
@@ -30,6 +30,7 @@ Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.3 adds `petName` to
   - `enableQuestionnaire`
   - `enableResultView`
   - `enablePdfShare`
+  - `enableMultiMode` (Android only)
 - Body: pet and scan-part cards
   - DOG: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH`
   - CAT: `EYE`, `TEETH`
@@ -53,6 +54,7 @@ Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.3 adds `petName` to
   "enablesQuestionnaire": true,
   "enableResultView": true,
   "enablePdfShare": true,
+  "enableMultiMode": false,
   "sdkKey": "Enter your issued SDK key",
   "petName": "Coco"
 }
@@ -69,6 +71,7 @@ Android requires Android 9.0+ (`minSdk 28`). Android SDK 2.1.3 adds `petName` to
 | `enablesQuestionnaire` | Boolean | No | Controls SDK questionnaire usage. Default in this sample: `true` |
 | `enableResultView` | Boolean | No | Controls whether the SDK built-in result screen is shown. Default in this sample: `true` |
 | `enablePdfShare` | Boolean | No | Controls whether the built-in result screen shows the PDF share button. Default in this sample: `true` |
+| `enableMultiMode` | Boolean | No | Android only: collect up to four photos; default `false` |
 
 ### Part Mapping on Android
 
@@ -111,11 +114,14 @@ If you extend `android/app/src/main/kotlin/.../MainActivity.kt`, use the followi
 | `petBirthday` | String | none | Pet birthday. `yyyy-MM-dd` recommended |
 | `petBreedName` | String | none | Breed name |
 | `petGender` | String | none | `M`, `F`, `MC`, `FC` |
-| `guideUrl` | String | none | SDK guide web view URL |
+| `guideUrl` | String | SDK default | Optional override for the SDK guide URL. This sample omits it |
 | `isFlashMode` | Boolean | `false` | Whether flash starts enabled |
 | `enablesQuestionnaire` | Boolean | `true` | Whether to use the SDK questionnaire |
 | `enableResultView` | Boolean | `true` | Whether to show the SDK built-in result screen |
-| `enablePdfShare` | Boolean | `false` | Whether to show the PDF share button on the SDK result screen |
+| `enablePdfShare` | Boolean | SDK: `false`; sample: `true` | Whether to show the PDF share button on the SDK result screen |
+| `enableMultiMode` | Boolean | `false` | Android server analysis: collect up to four photos and return a JSON array |
+
+Without a `guideUrl` override, Android SDK 3.2.0 uses `https://guide.ai4pet.com/sdk/guide/{locale}/{pet}/{part}` with its own locale and scan-part mapping.
 
 ## Android Native Bridge Example
 
@@ -133,8 +139,8 @@ val bundle = Bundle().apply {
     putBoolean("enablesQuestionnaire", enablesQuestionnaire)
     putBoolean("enableResultView", enableResultView)
     putBoolean("enablePdfShare", enablePdfShare)
+    putBoolean("enableMultiMode", enableMultiMode)
     putString("sdkKey", sdkKey)
-    putString("guideUrl", guideUrl)
 
     if (partType == "EAR" || partType == "BODY" || partType == "FOOT") {
         val nativePartType = if (partType == "BODY") "BELLY" else partType
@@ -149,7 +155,7 @@ Replace the sample values such as `userId`, `petId`, `petBirthday`, and `petBree
 
 ### `enablesQuestionnaire`
 
-- `true`: SDK questionnaire is used, and questionnaire answers can affect the final status.
+- `true`: SDK questionnaire is used; follow the final status returned by the server.
 - `false`: SDK proceeds without the questionnaire.
 
 ### `enableResultView`
@@ -164,6 +170,11 @@ Replace the sample values such as `userId`, `petId`, `petBirthday`, and `petBree
 
 `enablePdfShare` is meaningful when `enableResultView=true`.
 
+### `enableMultiMode` (Android only)
+
+- `false` (default): a single scan returns one JSON object.
+- `true`: up to four photos can be analyzed. The JSON string contains an array in capture order, even when only one photo is submitted. Check each item's status separately.
+
 ## Return Value
 
 The channel returns:
@@ -172,7 +183,7 @@ The channel returns:
 String?
 ```
 
-If the returned value is JSON, the sample pretty-prints it with 4-space indentation and shows it in a Flutter overlay.
+The channel returns the native JSON string unchanged. The sample pretty-prints either an object or an array and shows it in a Flutter overlay.
 
 ## Result JSON Overview
 
@@ -200,14 +211,7 @@ The public result JSON no longer includes a `metadata` object. Internal model fi
 | `CAUTION` | Observation is recommended |
 | `WARNING` | Follow-up is recommended |
 
-When `enablesQuestionnaire=true`, the Android SDK combines questionnaire answers with AI scan output before producing the final status.
-
-| Questionnaire answer | AI scan result | Final status |
-| --- | --- | --- |
-| Symptoms present | Abnormal signs detected | `WARNING` |
-| No symptoms | Abnormal signs detected | `CAUTION` |
-| No symptoms | No abnormal signs detected | `NORMAL` |
-| Symptoms present | No abnormal signs detected | `CAUTION` |
+Use the final status returned by the server. Do not recalculate or override it from questionnaire answers.
 
 ### Detailed Result Blocks
 
@@ -329,9 +333,11 @@ The iOS sample uses `AIScan 2.0.3`.
 
 ## Android ProGuard / R8
 
-Release builds with R8 minification require keep rules for JNI-referenced classes. The sample already includes these rules in `android/app/proguard-rules.pro` and wires them into the release build type.
+The SDK ships consumer R8 rules. The sample also includes host-app rules in `android/app/proguard-rules.pro`; verify a release build before shipping.
 
 ## Run
+
+Build the Android sample with JDK 17. This project uses Gradle 8.14, AGP 8.11.1, and Kotlin 2.2.20. If Flutter selects a newer Android Studio JDK, check `flutter doctor -v` and configure a JDK 17 path with `flutter config --jdk-dir=<JDK_17_PATH>`.
 
 ```bash
 flutter pub get

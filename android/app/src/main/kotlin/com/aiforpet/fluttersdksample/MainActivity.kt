@@ -8,7 +8,6 @@ import io.flutter.plugin.common.MethodChannel
 import com.aiforpet.pet.check.EyeCameraActivity
 import com.aiforpet.pet.check.SkinCameraActivity
 import com.aiforpet.pet.check.ToothCameraActivity
-import java.util.Locale
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.aiforpet.sdk/channel"
@@ -25,10 +24,11 @@ class MainActivity : FlutterActivity() {
                 val enablesQuestionnaire = call.argument<Boolean>("enablesQuestionnaire") ?: true
                 val enableResultView = call.argument<Boolean>("enableResultView") ?: true
                 val enablePdfShare = call.argument<Boolean>("enablePdfShare") ?: true
+                val enableMultiMode = call.argument<Boolean>("enableMultiMode") ?: false
                 val sdkKey = call.argument<String>("sdkKey") ?: ""
                 val petName = call.argument<String>("petName") ?: "TTcare"
 
-                launchSdkActivity(petType, partType, enablesQuestionnaire, enableResultView, enablePdfShare, sdkKey, petName)
+                launchSdkActivity(petType, partType, enablesQuestionnaire, enableResultView, enablePdfShare, enableMultiMode, sdkKey, petName)
             } else {
                 result.notImplemented()
             }
@@ -41,26 +41,14 @@ class MainActivity : FlutterActivity() {
         enablesQuestionnaire: Boolean,
         enableResultView: Boolean,
         enablePdfShare: Boolean,
+        enableMultiMode: Boolean,
         sdkKey: String,
         petName: String
     ) {
-        val selectLang = getCurrentLanguageCategory()
-        val guideBase = "https://resource-core.aiforpetcdn.com/sdk/guide/$selectLang/${petType.lowercase(Locale.ROOT)}/"
-        
-        var guideUrl = ""
         val activityClass = when (partType) {
-            "EYE" -> {
-                guideUrl = guideBase + "eye.html"
-                EyeCameraActivity::class.java
-            }
-            "TEETH" -> {
-                guideUrl = guideBase + "tooth.html"
-                ToothCameraActivity::class.java
-            }
-            "EAR", "BODY", "FOOT" -> {
-                guideUrl = guideBase + "skin.html"
-                SkinCameraActivity::class.java
-            }
+            "EYE" -> EyeCameraActivity::class.java
+            "TEETH" -> ToothCameraActivity::class.java
+            "EAR", "BODY", "FOOT" -> SkinCameraActivity::class.java
             else -> null
         }
 
@@ -81,8 +69,8 @@ class MainActivity : FlutterActivity() {
             putBoolean("enablesQuestionnaire", enablesQuestionnaire)
             putBoolean("enableResultView", enableResultView)
             putBoolean("enablePdfShare", enablePdfShare)
+            putBoolean("enableMultiMode", enableMultiMode)
             putString("sdkKey", sdkKey)
-            putString("guideUrl", guideUrl)
             
             if (partType == "EAR" || partType == "BODY" || partType == "FOOT") {
                 val realPart = if (partType == "BODY") "BELLY" else partType
@@ -110,13 +98,4 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun getCurrentLanguageCategory(): String {
-        val currentLocale = Locale.getDefault()
-        val languageCode = currentLocale.language
-        return when (languageCode) {
-            "ko" -> "ko"
-            "ja" -> "ja"
-            else -> "en"
-        }
-    }
 }

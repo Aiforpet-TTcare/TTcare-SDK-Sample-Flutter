@@ -10,10 +10,10 @@
 
 | プラットフォーム | ネイティブ SDK |
 | --- | --- |
-| Android | `io.github.aiforpet-ttcare:scansdk-lib:2.1.3` |
+| Android | `io.github.aiforpet-ttcare:scansdk-lib:3.2.0` |
 | iOS | `AIScan 2.0.3` |
 
-Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.1.3 では SDK 起動規則に `petName` が追加され、公開結果 JSON が最新のレスポンス形式に整理され、結果画面のローカライズとして英語、韓国語、日本語、イタリア語、スウェーデン語、タイ語をサポートします。
+Android SDK 3.2.0 自体は API 23 以上に対応しますが、この Flutter サンプルの現在の設定は `minSdk 28` です。SDK は端末で画像を準備し、サーバーから最終解析結果を取得します。準備中もカメラプレビューを先に表示しますが、準備完了前は撮影できません。不正な SDK キーは SDK 画面のキャンセルとして処理されるため、発行済みキーをそのまま渡してください。Android の結果 Bundle と公開 JSON キーは 3.1.0 と同じです。
 
 ## このサンプルが提供するもの
 
@@ -30,6 +30,7 @@ Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.1.3 で�
   - `enableQuestionnaire`
   - `enableResultView`
   - `enablePdfShare`
+  - `enableMultiMode` (Android 専用)
 - 画面本体: ペット種別と検査部位カード
   - DOG: `EYE`, `EAR`, `BODY`, `FOOT`, `TEETH`
   - CAT: `EYE`, `TEETH`
@@ -53,6 +54,7 @@ Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.1.3 で�
   "enablesQuestionnaire": true,
   "enableResultView": true,
   "enablePdfShare": true,
+  "enableMultiMode": false,
   "sdkKey": "Enter your issued SDK key",
   "petName": "Coco"
 }
@@ -69,6 +71,7 @@ Android は Android 9.0+ (`minSdk 28`) が必要です。Android SDK 2.1.3 で�
 | `enablesQuestionnaire` | Boolean | いいえ | SDK 問診を使用するか。サンプルのデフォルト: `true` |
 | `enableResultView` | Boolean | いいえ | SDK 内蔵結果画面を表示するか。サンプルのデフォルト: `true` |
 | `enablePdfShare` | Boolean | いいえ | 内蔵結果画面に PDF 共有ボタンを表示するか。サンプルのデフォルト: `true` |
+| `enableMultiMode` | Boolean | いいえ | Android 専用: 最大4枚を撮影。既定値: `false` |
 
 ### Android 部位マッピング
 
@@ -107,14 +110,18 @@ Android ブリッジは Flutter の `partType` 値をネイティブ SDK Activit
 | 名前 | 型 | デフォルト | 説明 |
 | --- | --- | --- | --- |
 | `petId` | String | なし | パートナーサービスのペット識別子 |
+| `petName` | String | なし | 内蔵結果画面と PDF で使用するペット名 |
 | `petBirthday` | String | なし | ペットの誕生日。`yyyy-MM-dd` 形式推奨 |
 | `petBreedName` | String | なし | 品種名 |
 | `petGender` | String | なし | `M`, `F`, `MC`, `FC` |
-| `guideUrl` | String | なし | SDK 撮影ガイド WebView URL |
+| `guideUrl` | String | SDK 既定値 | SDK 撮影ガイド URL を変更する場合のみ指定。サンプルは省略 |
 | `isFlashMode` | Boolean | `false` | 撮影時にフラッシュを初期有効にするか |
 | `enablesQuestionnaire` | Boolean | `true` | SDK 問診を使用するか |
 | `enableResultView` | Boolean | `true` | SDK 内蔵結果画面を表示するか |
-| `enablePdfShare` | Boolean | `false` | SDK 結果画面に PDF 共有ボタンを表示するか |
+| `enablePdfShare` | Boolean | SDK: `false`; サンプル: `true` | SDK 結果画面に PDF 共有ボタンを表示するか |
+| `enableMultiMode` | Boolean | `false` | Android サーバー解析で最大4枚を撮影し、JSON 配列を返す |
+
+`guideUrl` を指定しない場合、Android SDK 3.2.0 は `https://guide.ai4pet.com/sdk/guide/{locale}/{pet}/{part}` を言語と検査部位に合わせて選択します。
 
 ## Android ネイティブブリッジ例
 
@@ -132,8 +139,8 @@ val bundle = Bundle().apply {
     putBoolean("enablesQuestionnaire", enablesQuestionnaire)
     putBoolean("enableResultView", enableResultView)
     putBoolean("enablePdfShare", enablePdfShare)
+    putBoolean("enableMultiMode", enableMultiMode)
     putString("sdkKey", sdkKey)
-    putString("guideUrl", guideUrl)
 
     if (partType == "EAR" || partType == "BODY" || partType == "FOOT") {
         val nativePartType = if (partType == "BODY") "BELLY" else partType
@@ -148,7 +155,7 @@ val bundle = Bundle().apply {
 
 ### `enablesQuestionnaire`
 
-- `true`: SDK 問診を使用し、問診回答が最終状態に反映される場合があります。
+- `true`: SDK 問診を使用します。最終状態はサーバーが返した値に従ってください。
 - `false`: 問診なしで進行します。
 
 ### `enableResultView`
@@ -163,6 +170,11 @@ val bundle = Bundle().apply {
 
 `enablePdfShare` は `enableResultView=true` の場合に有効です。
 
+### `enableMultiMode` (Android 専用)
+
+- `false` (既定値): 単一撮影の結果は JSON オブジェクトです。
+- `true`: 最大4枚を解析し、1枚だけ送信した場合も JSON 文字列の最上位は撮影順の配列です。各項目の状態を個別に確認してください。
+
 ## 戻り値
 
 チャネルの戻り値は以下の型です。
@@ -171,7 +183,7 @@ val bundle = Bundle().apply {
 String?
 ```
 
-戻り値が JSON の場合、サンプルアプリは 4 スペースで整形して Flutter オーバーレイに表示します。
+チャネルはネイティブ JSON 文字列をそのまま返します。サンプルはオブジェクトと配列の両方を 4 スペースで整形し、Flutter オーバーレイに表示します。
 
 ## 結果 JSON 概要
 
@@ -199,14 +211,7 @@ SDK 結果 JSON には以下のフィールドが含まれる場合がありま�
 | `CAUTION` | 観察が推奨される状態 |
 | `WARNING` | 追加確認が推奨される状態 |
 
-`enablesQuestionnaire=true` の場合、Android SDK は問診回答と AI スキャン結果を組み合わせて最終ステータスを決定します。
-
-| 問診回答 | AI スキャン結果 | 最終ステータス |
-| --- | --- | --- |
-| 症状あり | 異常兆候あり | `WARNING` |
-| 症状なし | 異常兆候あり | `CAUTION` |
-| 症状なし | 異常兆候なし | `NORMAL` |
-| 症状あり | 異常兆候なし | `CAUTION` |
+最終ステータスはサーバーの応答に従います。ホストアプリで問診回答から再計算したり上書きしたりしないでください。
 
 ### 詳細結果ブロック
 
@@ -328,9 +333,11 @@ iOS サンプルは `AIScan 2.0.3` を使用します。
 
 ## Android ProGuard / R8
 
-R8 minification を適用する release ビルドでは、JNI 参照クラスの keep rule が必要です。サンプルには `android/app/proguard-rules.pro` に必要なルールがすでに含まれており、release ビルドタイプに接続されています。
+SDK には利用者向けの R8 ルールが含まれています。サンプルの `android/app/proguard-rules.pro` にはアプリ用ルールもあります。公開前にリリースビルドを検証してください。
 
 ## 実行
+
+Android サンプルは JDK 17 でビルドしてください。このプロジェクトは Gradle 8.14、AGP 8.11.1、Kotlin 2.2.20 を使用します。Flutter が新しい Android Studio JDK を選択する場合は `flutter doctor -v` で確認し、`flutter config --jdk-dir=<JDK_17_PATH>` で JDK 17 を指定してください。
 
 ```bash
 flutter pub get
